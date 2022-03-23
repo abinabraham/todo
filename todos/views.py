@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, ModelViewSet
 from rest_framework import status
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import (HttpResponse, HttpResponseBadRequest, 
@@ -11,12 +12,11 @@ from django.http import JsonResponse
 from .models import Task
 from .serializers import TaskSerializer
 
+
 class TasksViewSet(ModelViewSet):
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    json_encoder = DjangoJSONEncoder
-    json_content_type = 'application/json;charset=UTF-8'
 
     def list(self, request):
         serializer = TaskSerializer(self.queryset, many=True)
@@ -51,10 +51,14 @@ class TasksViewSet(ModelViewSet):
 
     def update(self, request, pk=None):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=False)
-        print(serializer.is_valid())
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+
         if serializer.is_valid():
-            serializer.save()
+            self.perform_update(serializer)
             return JsonResponse({'data':serializer.data}, safe=False, status=status.HTTP_200_OK)
         else:
-            return JsonResponse({'data':serializer.data}, status=status.HTTP_422_UNPROCESSABLE_ENTITY, safe=False)
+            return JsonResponse({'data':serializer.data}, safe=False, status=status.HTTP_200_OK)
+
+    def perform_update(self, serializer):
+        serializer.save()
+        

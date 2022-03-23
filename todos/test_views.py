@@ -110,9 +110,8 @@ class TaskDetailViewTests(TestCase):
         data = '{"task": "foo", "completed": false}'
         pid = self.post_task(data)
         url = f"/tasks/{pid}/"
-        data = '{"task": "bar", "completed": true}'
-        response = self.client.put(url, data)
-        print("============++++++++++++response",response)
+        data = '{"task": "bar", "completed":true}'
+        response = self.client.put(url, data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = self.client.get(url)
         self.assertIsInstance(response, JsonResponse)
